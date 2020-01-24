@@ -289,7 +289,8 @@ void Mesh::draw_faces(bool smooth) const {
 
 void Mesh::draw_edges() const {
   // Draw seleted edge
-  Edge *ep = scene->hovered.element->getEdge();
+  Edge *ep = (scene->hovered.element == nullptr) ? nullptr :
+             scene->hovered.element->getEdge();
   if (ep) {
     EdgeIter e = ep->halfedge()->edge();
 
