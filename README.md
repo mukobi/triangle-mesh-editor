@@ -1,10 +1,13 @@
 # Stanford CS248 Assignment 2: MeshEdit
-The repository is located at https://github.com/stanford-cs248/triangle-mesh-editor. The wiki (https://github.com/stanford-cs248/triangle-mesh-editor/wiki) on that page will be the primary source of information about this assignment, this document only contains administrative details about grading and submission.
+
+The repository is located at https://github.com/stanford-cs248/triangle-mesh-editor. We have created a wiki (https://github.com/stanford-cs248/triangle-mesh-editor/wiki) that will will be the primary source of information about this assignment. This document only contains administrative details about grading and submission.
 
 ## Due Date
-The assignment is due Feb. 8 at 11:59:59 PM.
+
+The assignment is due Feb. 6 at 11:59:59 PM.
 
 ## Code Environment
+
 This codebase should compile on Linux, Mac OS X, and Windows on a typical environment. The build instructions given on [the project page](https://github.com/stanford-cs248/triangle-mesh-editor/wiki/Build-Instructions) will walk you through installing dependencies and building the code. If you have difficulties running the code on your local machine, the rice cluster machines (rice.stanford.edu) have all the packages required to build the project.
 
 When you have successfully built your code, you should get an executable named `cardinal3d`. Upon starting the program, it should be in model mode. The [User Guide](https://github.com/stanford-cs248/triangle-mesh-editor/wiki/User-Guide-(MeshEdit)) details how to use the interface. For convenience, some keyboard shortcuts are reproduced below.
