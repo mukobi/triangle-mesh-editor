@@ -1,6 +1,6 @@
 # Stanford CS248 Assignment 2: MeshEdit
 
-The repository is located at https://github.com/stanford-cs248/triangle-mesh-editor. We have created a wiki (https://github.com/stanford-cs248/triangle-mesh-editor/wiki) that will will be the primary source of information about this assignment. This document only contains administrative details about grading and submission.
+The repository is located at https://github.com/stanford-cs248/triangle-mesh-editor. We have created a wiki (https://github.com/stanford-cs248/triangle-mesh-editor/wiki) that will be the primary source of information about this assignment. On that page you will find all the details about what you need to implement, etc. This document only contains administrative details about building the starter code, grading, and submission.
 
 ## Due Date
 
