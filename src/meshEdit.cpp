@@ -59,8 +59,8 @@ EdgeIter HalfedgeMesh::flipEdge(EdgeIter e0) {
   // This method should flip the given edge and return an iterator to the
   // flipped edge.
 
-  // TODO: handle edge cases
-  // return e0;
+  // handle edge cases
+  if (e0->isBoundary()) return e0;
 
   // PHASE I: Collect relevant elements
 
@@ -70,7 +70,6 @@ EdgeIter HalfedgeMesh::flipEdge(EdgeIter e0) {
   HalfedgeIter h2 = h1->next();
   HalfedgeIter h3 = h2;
   while (h3->next() != h0) h3 = h3->next();
-  assert(h3 == h2); // triangle
 
   HalfedgeIter h4 = h0->twin();
   HalfedgeIter h5 = h4->next();
@@ -101,6 +100,11 @@ EdgeIter HalfedgeMesh::flipEdge(EdgeIter e0) {
   // FACES
   FaceIter f0 = h0->face();
   FaceIter f1 = h4->face();
+
+  // handle edge cases
+  if (f0->isBoundary() ||
+    f1->isBoundary())
+    return e0;
 
 
   // PHASE II: Allocate new elements
