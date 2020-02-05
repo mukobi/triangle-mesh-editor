@@ -2,6 +2,7 @@ SuNet ID:
 
 Tasks:
 flipEdge()
+splitEdge()
 
 Extra credits:
 
