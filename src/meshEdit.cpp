@@ -13,187 +13,330 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
   // the edge that was split, rather than the new edges.
 
   // TODO: handle edge cases https://piazza.com/class/k4xhjytl1d94tl?cid=217
-  // if (e0->isBoundary()) return e0;
+  if (!e0->isBoundary()) {
 
-  // PHASE I: Collect relevant elements
+    // PHASE I: Collect relevant elements
 
-  // HALFEDGES
-  HalfedgeIter h0 = e0->halfedge();
-  HalfedgeIter h1 = h0->next();
-  HalfedgeIter h2 = h1->next();
-  HalfedgeIter h3 = h0->twin();
-  HalfedgeIter h4 = h3->next();
-  HalfedgeIter h5 = h4->next();
-  HalfedgeIter h6 = h1->twin();
-  HalfedgeIter h7 = h2->twin();
-  HalfedgeIter h8 = h4->twin();
-  HalfedgeIter h9 = h5->twin();
+    // HALFEDGES
+    HalfedgeIter h0 = e0->halfedge();
+    HalfedgeIter h1 = h0->next();
+    HalfedgeIter h2 = h1->next();
+    HalfedgeIter h3 = h0->twin();
+    HalfedgeIter h4 = h3->next();
+    HalfedgeIter h5 = h4->next();
+    HalfedgeIter h6 = h1->twin();
+    HalfedgeIter h7 = h2->twin();
+    HalfedgeIter h8 = h4->twin();
+    HalfedgeIter h9 = h5->twin();
 
-  // check to make sure they are triangles
-  if (h2->next() != h0 || h5->next() != h3)
-    showError("Cannot split edges of non-triangular faces.");
+    // check to make sure they are triangles
+    if (h2->next() != h0 || h5->next() != h3) {
+      showError("Cannot split edges of non-triangular faces.");
+      return verticesBegin();
+    }
 
-  // VERTICES
-  VertexIter v0 = h0->vertex();
-  VertexIter v1 = h1->vertex();
-  VertexIter v2 = h2->vertex();
-  VertexIter v3 = h5->vertex();
+    // VERTICES
+    VertexIter v0 = h0->vertex();
+    VertexIter v1 = h1->vertex();
+    VertexIter v2 = h2->vertex();
+    VertexIter v3 = h5->vertex();
 
-  // EDGES
-  // e0 passed in
-  EdgeIter e1 = h1->edge();
-  EdgeIter e2 = h2->edge();
-  EdgeIter e3 = h4->edge();
-  EdgeIter e4 = h5->edge();
+    // EDGES
+    // e0 passed in
+    EdgeIter e1 = h1->edge();
+    EdgeIter e2 = h2->edge();
+    EdgeIter e3 = h4->edge();
+    EdgeIter e4 = h5->edge();
 
-  // FACES
-  FaceIter f0 = h0->face();
-  FaceIter f1 = h3->face();
-
-
-  // PHASE II: Allocate new elements
-
-  // HALFEDGES
-  HalfedgeIter h10 = newHalfedge();
-  HalfedgeIter h11 = newHalfedge();
-  HalfedgeIter h12 = newHalfedge();
-  HalfedgeIter h13 = newHalfedge();
-  HalfedgeIter h14 = newHalfedge();
-  HalfedgeIter h15 = newHalfedge();
-
-  // VERTICES
-  VertexIter v4 = newVertex();
-
-  // EDGES
-  EdgeIter e5 = newEdge();
-  EdgeIter e6 = newEdge();
-  EdgeIter e7 = newEdge();
-
-  // FACES
-  FaceIter f2 = newFace();
-  FaceIter f3 = newFace();
+    // FACES
+    FaceIter f0 = h0->face();
+    FaceIter f1 = h3->face();
 
 
-  // PHASE III: Reassign Elements
+    // PHASE II: Allocate new elements
 
-  // HALFEDGES
-  h0->next() =   h10;
-  h0->twin() =   h3;
-  h0->vertex() = v0;
-  h0->edge() =   e0;
-  h0->face() =   f0;
-  h1->next() =   h11;
-  h1->twin() =   h6;
-  h1->vertex() = v1;
-  h1->edge() =   e1;
-  h1->face() =   f2;
-  h2->next() =   h0;
-  h2->twin() =   h7;
-  h2->vertex() = v2;
-  h2->edge() =   e2;
-  h2->face() =   f0;
-  h3->next() =   h4;
-  h3->twin() =   h0;
-  h3->vertex() = v4;
-  h3->edge() =   e0;
-  h3->face() =   f1;
-  h4->next() =   h12;
-  h4->twin() =   h8;
-  h4->vertex() = v0;
-  h4->edge() =   e3;
-  h4->face() =   f1;
-  h5->next() =   h15;
-  h5->twin() =   h9;
-  h5->vertex() = v3;
-  h5->edge() =   e4;
-  h5->face() =   f3;
+    // HALFEDGES
+    HalfedgeIter h10 = newHalfedge();
+    HalfedgeIter h11 = newHalfedge();
+    HalfedgeIter h12 = newHalfedge();
+    HalfedgeIter h13 = newHalfedge();
+    HalfedgeIter h14 = newHalfedge();
+    HalfedgeIter h15 = newHalfedge();
 
-  // outside
-  h6->next() =   h6->next();
-  h6->twin() =   h1;
-  h6->vertex() = v2;
-  h6->edge() =   e1;
-  h6->face() =   h6->face();
-  h7->next() =   h7->next();
-  h7->twin() =   h2;
-  h7->vertex() = v0;
-  h7->edge() =   e2;
-  h7->face() =   h7->face();
-  h8->next() =   h8->next();
-  h8->twin() =   h4;
-  h8->vertex() = v3;
-  h8->edge() =   e3;
-  h8->face() =   h8->face();
-  h9->next() =   h9->next();
-  h9->twin() =   h5;
-  h9->vertex() = v1;
-  h9->edge() =   e4;
-  h9->face() =   h9->face();
+    // VERTICES
+    VertexIter v4 = newVertex();
 
-  // new
-  h10->next() =   h2;
-  h10->twin() =   h11;
-  h10->vertex() = v4;
-  h10->edge() =   e6;
-  h10->face() =   f0;
-  h11->next() =   h14;
-  h11->twin() =   h10;
-  h11->vertex() = v2;
-  h11->edge() =   e6;
-  h11->face() =   f2;
-  h12->next() =   h3;
-  h12->twin() =   h13;
-  h12->vertex() = v3;
-  h12->edge() =   e7;
-  h12->face() =   f1;
-  h13->next() =   h5;
-  h13->twin() =   h12;
-  h13->vertex() = v4;
-  h13->edge() =   e7;
-  h13->face() =   f3;
-  h14->next() =   h1;
-  h14->twin() =   h15;
-  h14->vertex() = v4;
-  h14->edge() =   e5;
-  h14->face() =   f2;
-  h15->next() =   h13;
-  h15->twin() =   h14;
-  h15->vertex() = v1;
-  h15->edge() =   e5;
-  h15->face() =   f3;
+    // EDGES
+    EdgeIter e5 = newEdge();
+    EdgeIter e6 = newEdge();
+    EdgeIter e7 = newEdge();
+
+    // FACES
+    FaceIter f2 = newFace();
+    FaceIter f3 = newFace();
 
 
-  // VERTICES
-  v0->halfedge() = h0;
-  v1->halfedge() = h1;
-  v2->halfedge() = h2;
-  v3->halfedge() = h5;
-  v4->halfedge() = h3;
+    // PHASE III: Reassign Elements
 
-  // position of new vertices
-  v4->position = (v0->position + v1->position) / 2.0f;
+    // HALFEDGES
+    h0->next() = h10;
+    h0->twin() = h3;
+    h0->vertex() = v0;
+    h0->edge() = e0;
+    h0->face() = f0;
+    h1->next() = h11;
+    h1->twin() = h6;
+    h1->vertex() = v1;
+    h1->edge() = e1;
+    h1->face() = f2;
+    h2->next() = h0;
+    h2->twin() = h7;
+    h2->vertex() = v2;
+    h2->edge() = e2;
+    h2->face() = f0;
+    h3->next() = h4;
+    h3->twin() = h0;
+    h3->vertex() = v4;
+    h3->edge() = e0;
+    h3->face() = f1;
+    h4->next() = h12;
+    h4->twin() = h8;
+    h4->vertex() = v0;
+    h4->edge() = e3;
+    h4->face() = f1;
+    h5->next() = h15;
+    h5->twin() = h9;
+    h5->vertex() = v3;
+    h5->edge() = e4;
+    h5->face() = f3;
 
-  // EDGES
-  e0->halfedge() = h0;
-  e1->halfedge() = h1;
-  e2->halfedge() = h2;
-  e3->halfedge() = h4;
-  e4->halfedge() = h5;
-  e5->halfedge() = h14;
-  e6->halfedge() = h11;
-  e7->halfedge() = h13;
+    // outside
+    h6->next() = h6->next();
+    h6->twin() = h1;
+    h6->vertex() = v2;
+    h6->edge() = e1;
+    h6->face() = h6->face();
+    h7->next() = h7->next();
+    h7->twin() = h2;
+    h7->vertex() = v0;
+    h7->edge() = e2;
+    h7->face() = h7->face();
+    h8->next() = h8->next();
+    h8->twin() = h4;
+    h8->vertex() = v3;
+    h8->edge() = e3;
+    h8->face() = h8->face();
+    h9->next() = h9->next();
+    h9->twin() = h5;
+    h9->vertex() = v1;
+    h9->edge() = e4;
+    h9->face() = h9->face();
 
-  // FACES
-  f0->halfedge() = h0;
-  f1->halfedge() = h4;
-  f2->halfedge() = h1;
-  f3->halfedge() = h5;
+    // new
+    h10->next() = h2;
+    h10->twin() = h11;
+    h10->vertex() = v4;
+    h10->edge() = e6;
+    h10->face() = f0;
+    h11->next() = h14;
+    h11->twin() = h10;
+    h11->vertex() = v2;
+    h11->edge() = e6;
+    h11->face() = f2;
+    h12->next() = h3;
+    h12->twin() = h13;
+    h12->vertex() = v3;
+    h12->edge() = e7;
+    h12->face() = f1;
+    h13->next() = h5;
+    h13->twin() = h12;
+    h13->vertex() = v4;
+    h13->edge() = e7;
+    h13->face() = f3;
+    h14->next() = h1;
+    h14->twin() = h15;
+    h14->vertex() = v4;
+    h14->edge() = e5;
+    h14->face() = f2;
+    h15->next() = h13;
+    h15->twin() = h14;
+    h15->vertex() = v1;
+    h15->edge() = e5;
+    h15->face() = f3;
 
-  // PHASE IV: Delete unused elements
 
-  // nothing to delete!
+    // VERTICES
+    v0->halfedge() = h0;
+    v1->halfedge() = h1;
+    v2->halfedge() = h2;
+    v3->halfedge() = h5;
+    v4->halfedge() = h3;
 
-  return v4;
+    // position of new vertices
+    v4->position = (v0->position + v1->position) / 2.0f;
+
+    // EDGES
+    e0->halfedge() = h0;
+    e1->halfedge() = h1;
+    e2->halfedge() = h2;
+    e3->halfedge() = h4;
+    e4->halfedge() = h5;
+    e5->halfedge() = h14;
+    e6->halfedge() = h11;
+    e7->halfedge() = h13;
+
+    // FACES
+    f0->halfedge() = h0;
+    f1->halfedge() = h4;
+    f2->halfedge() = h1;
+    f3->halfedge() = h5;
+
+    // PHASE IV: Delete unused elements
+
+    // nothing to delete!
+
+    return v4;
+  }
+  else {
+    // e0 is a boundary edge, need to only split one triangle
+
+    // PHASE I: Collect relevant elements
+    cout << "boundary split" << endl;
+    // HALFEDGES
+    HalfedgeIter h0 = e0->halfedge();
+    if (h0->isBoundary()) {
+      cout << "halfedge is boundary, flipping" << endl;
+      // wrong triangle, twin h0 to get the inside triangle
+      h0 = h0->twin();
+    }
+    HalfedgeIter h1 = h0->next();
+    HalfedgeIter h2 = h1->next();
+    HalfedgeIter h3 = h0->twin();
+    HalfedgeIter h4 = h1->twin();
+    HalfedgeIter h5 = h2->twin();
+
+    // check to make sure it's a triangle
+    if (h2->next() != h0) {
+      showError("Cannot split edges of non-triangular faces.");
+      return verticesBegin();
+    }
+
+    // VERTICES
+    VertexIter v0 = h0->vertex();
+    VertexIter v1 = h1->vertex();
+    VertexIter v2 = h2->vertex();
+
+    // EDGES
+    // e0 passed in
+    EdgeIter e1 = h1->edge();
+    EdgeIter e2 = h2->edge();
+
+    // FACES
+    FaceIter f0 = h0->face();
+
+
+    // PHASE II: Allocate new elements
+
+    // HALFEDGES
+    HalfedgeIter h6 = newHalfedge();
+    HalfedgeIter h7 = newHalfedge();
+    HalfedgeIter h8 = newHalfedge();
+    HalfedgeIter h9 = newHalfedge();
+
+    // VERTICES
+    VertexIter v3 = newVertex();
+
+    // EDGES
+    EdgeIter e3 = newEdge();
+    EdgeIter e4 = newEdge();
+
+    // FACES
+    FaceIter f1 = newFace();
+
+
+    // PHASE III: Reassign Elements
+
+    // HALFEDGES
+    h0->next() =   h6;
+    h0->twin() =   h3;
+    h0->vertex() = v0;
+    h0->edge() =   e0;
+    h0->face() =   f0;
+    h1->next() =   h7;
+    h1->twin() =   h4;
+    h1->vertex() = v1;
+    h1->edge() =   e1;
+    h1->face() =   f1;
+    h2->next() =   h0;
+    h2->twin() =   h5;
+    h2->vertex() = v2;
+    h2->edge() =   e2;
+    h2->face() =   f0;
+    // outside
+    h3->next() =   h3->next();
+    h3->twin() =   h0;
+    h3->vertex() = v3;
+    h3->edge() =   e0;
+    h3->face() =   h3->face();
+    h4->next() =   h4->next();
+    h4->twin() =   h1;
+    h4->vertex() = v2;
+    h4->edge() =   e1;
+    h4->face() =   h4->face();
+    h5->next() =   h5->next();
+    h5->twin() =   h2;
+    h5->vertex() = v0;
+    h5->edge() =   e2;
+    h5->face() =   h5->face();
+    // new
+    h6->next() =   h2;
+    h6->twin() =   h7;
+    h6->vertex() = v3;
+    h6->edge() =   e4;
+    h6->face() =   f0;
+    h7->next() =   h8;
+    h7->twin() =   h6;
+    h7->vertex() = v2;
+    h7->edge() =   e4;
+    h7->face() =   f1;
+    h8->next() =   h1;
+    h8->twin() =   h9;
+    h8->vertex() = v3;
+    h8->edge() =   e3;
+    h8->face() =   f1;
+    h9->next() =   h3;
+    h9->twin() =   h8;
+    h9->vertex() = v1;
+    h9->edge() =   e3;
+    h9->face() =   h3->face();
+
+
+    // VERTICES
+    v0->halfedge() = h0;
+    v1->halfedge() = h1;
+    v2->halfedge() = h2;
+    v3->halfedge() = h3;
+
+    // position of new vertices
+    v3->position = (v0->position + v1->position) / 2.0f;
+
+    // EDGES
+    e0->halfedge() = h0;
+    e1->halfedge() = h1;
+    e2->halfedge() = h2;
+    e3->halfedge() = h8;
+    e4->halfedge() = h7;
+
+    // FACES
+    f0->halfedge() = h0;
+    f1->halfedge() = h1;
+
+    // PHASE IV: Delete unused elements
+
+    // nothing to delete!
+
+    return v3;
+  }
 }
 
 VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
