@@ -1,10 +1,13 @@
 SuNet ID:
 gmukobi
 
-Tasks: (I did all the required ones)
+Tasks: (I did all the required ones completely functionally, including boundary/edge cases)
+
+1. EdgeSplit and EdgeFlip
 flipEdge()
 splitEdge()
 
+2. LinearSubdivision and 3. CatmullClarkSubdivision
 subdivideQuad()
 computeLinearSubdivisionPositions()
 computeCatmullClarkPositions()
@@ -12,7 +15,11 @@ assignSubdivisionIndices()
 buildSubdivisionVertexList()
 buildSubdivisionFaceList()
 
+4. LoopSubdivision
 upsample()
+
+5. Create one beautiful 3D model using Cardinal3D
+# TODO: make low-poly baby Yoda
 
 Extra credits:
 nah
