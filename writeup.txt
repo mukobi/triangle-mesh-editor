@@ -4,6 +4,13 @@ Tasks:
 flipEdge()
 splitEdge()
 
+subdivideQuad()
+computeLinearSubdivisionPositions()
+#not yet: computeCatmullClarkPositions()
+assignSubdivisionIndices()
+buildSubdivisionVertexList()
+buildSubdivisionFaceList()
+
 Extra credits:
 
 Comments and considerations:
