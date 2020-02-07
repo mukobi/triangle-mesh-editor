@@ -1,12 +1,13 @@
-SuNet ID: 
+SuNet ID:
+gmukobi
 
-Tasks:
+Tasks: (I did all the required ones)
 flipEdge()
 splitEdge()
 
 subdivideQuad()
 computeLinearSubdivisionPositions()
-#not yet: computeCatmullClarkPositions()
+computeCatmullClarkPositions()
 assignSubdivisionIndices()
 buildSubdivisionVertexList()
 buildSubdivisionFaceList()

@@ -661,12 +661,65 @@ void HalfedgeMesh::computeCatmullClarkPositions() {
   // slightly more involved, using the Catmull-Clark subdivision
   // rules. (These rules are outlined in the Developer Manual.)
 
-  // TODO face
-
+  // TODO faces
+  for (FaceIter f = facesBegin(); f != facesEnd(); f++) {
+    // collect surrounding vertex positions
+    vector<Vector3D> vertexPositions;
+    HalfedgeCIter hStart = f->halfedge();
+    HalfedgeCIter hChange = hStart;
+    do
+    {
+      vertexPositions.push_back(hChange->vertex()->position);
+      hChange = hChange->next();
+    } while (hChange != hStart);
+    // assign position to mean
+    Vector3D sum;
+    for (Vector3D position : vertexPositions) sum += position;
+    f->newPosition = sum / vertexPositions.size();
+  }
   // TODO edges
-
+  for (EdgeIter e = edgesBegin(); e != edgesEnd(); e++) {
+    VertexCIter v0 = e->halfedge()->vertex();  // endpoint
+    VertexCIter v1 = e->halfedge()->twin()->vertex(); // endpoint
+    Vector3D faceP0 = e->halfedge()->face()->newPosition; // face
+    Vector3D faceP1 = e->halfedge()->twin()->face()->newPosition; // face
+    e->newPosition = (v0->position + v1->position + faceP0 + faceP1) / 4;
+  }
   // TODO vertices
-  showError("computeCatmullClarkPositions() not implemented.");
+  for (VertexIter v = verticesBegin(); v != verticesEnd(); v++) {
+    // Q is the average of all new face position for faces containing v
+    vector<Vector3D> facePositions;
+    HalfedgeCIter hStart = v->halfedge();
+    HalfedgeCIter hChange = hStart;
+    do
+    {
+      facePositions.push_back(hChange->face()->newPosition);
+      hChange = hChange->twin()->next();
+    } while (hChange != hStart);
+    size_t vertexDegree = facePositions.size();
+    Vector3D Q;
+    for (Vector3D pos : facePositions) Q += pos;
+    Q /= vertexDegree;
+
+    // R is the average of all edge midpoints for edges containing v
+    vector<Vector3D> edgeMidpointPositions;
+    hStart = v->halfedge();
+    hChange = hStart;
+    Vector3D R;
+    do
+    {
+      Vector3D edgeMidpoint = (v->position + hChange->next()->vertex()->position) / 2;
+      R += edgeMidpoint;
+      hChange = hChange->twin()->next();
+    } while (hChange != hStart);
+    R /= vertexDegree;
+
+    // S is the original vertex position for vertex v
+    Vector3D S = v->position;
+
+    // weighted sum
+    v->newPosition = (Q + 2*R + (vertexDegree - 3) * S) / vertexDegree;
+  }
 }
 
 /**
