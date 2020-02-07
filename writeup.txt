@@ -12,6 +12,17 @@ assignSubdivisionIndices()
 buildSubdivisionVertexList()
 buildSubdivisionFaceList()
 
+upsample()
+
 Extra credits:
+nah
 
 Comments and considerations:
+Cool assignment, but a lot of the bugfixing wasn't 
+anything too interesting, mostly just typos in local 
+edge operations. It might be cool if one or both of 
+`edgeFlip` and `edgeSplit` were already implemented 
+so we didn't have to deal with as much of that pain,
+but then you could require more of the extra stuff
+be completed so overall each student implements more
+of the functions.
