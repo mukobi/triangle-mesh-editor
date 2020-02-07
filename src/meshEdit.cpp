@@ -679,46 +679,76 @@ void HalfedgeMesh::computeCatmullClarkPositions() {
   }
   // TODO edges
   for (EdgeIter e = edgesBegin(); e != edgesEnd(); e++) {
-    VertexCIter v0 = e->halfedge()->vertex();  // endpoint
-    VertexCIter v1 = e->halfedge()->twin()->vertex(); // endpoint
-    Vector3D faceP0 = e->halfedge()->face()->newPosition; // face
-    Vector3D faceP1 = e->halfedge()->twin()->face()->newPosition; // face
-    e->newPosition = (v0->position + v1->position + faceP0 + faceP1) / 4;
+    if (!e->isBoundary()) {
+      VertexCIter v0 = e->halfedge()->vertex();  // endpoint
+      VertexCIter v1 = e->halfedge()->twin()->vertex(); // endpoint
+      Vector3D faceP0 = e->halfedge()->face()->newPosition; // face
+      Vector3D faceP1 = e->halfedge()->twin()->face()->newPosition; // face
+      e->newPosition = (v0->position + v1->position + faceP0 + faceP1) / 4;
+    }
+    else {
+      // boundary edge, just place at midpoint
+      VertexCIter v0 = e->halfedge()->vertex();
+      VertexCIter v1 = e->halfedge()->twin()->vertex();
+      e->newPosition = (v0->position + v1->position) / 2;
+    }
   }
   // TODO vertices
   for (VertexIter v = verticesBegin(); v != verticesEnd(); v++) {
-    // Q is the average of all new face position for faces containing v
-    vector<Vector3D> facePositions;
-    HalfedgeCIter hStart = v->halfedge();
-    HalfedgeCIter hChange = hStart;
-    do
-    {
-      facePositions.push_back(hChange->face()->newPosition);
-      hChange = hChange->twin()->next();
-    } while (hChange != hStart);
-    size_t vertexDegree = facePositions.size();
-    Vector3D Q;
-    for (Vector3D pos : facePositions) Q += pos;
-    Q /= vertexDegree;
+    if (!v->isBoundary()) {
+      // Q is the average of all new face position for faces containing v
+      vector<Vector3D> facePositions;
+      HalfedgeCIter hStart = v->halfedge();
+      HalfedgeCIter hChange = hStart;
+      do
+      {
+        facePositions.push_back(hChange->face()->newPosition);
+        hChange = hChange->twin()->next();
+      } while (hChange != hStart);
+      size_t vertexDegree = facePositions.size();
+      Vector3D Q;
+      for (Vector3D pos : facePositions) Q += pos;
+      Q /= vertexDegree;
 
-    // R is the average of all edge midpoints for edges containing v
-    vector<Vector3D> edgeMidpointPositions;
-    hStart = v->halfedge();
-    hChange = hStart;
-    Vector3D R;
-    do
-    {
-      Vector3D edgeMidpoint = (v->position + hChange->next()->vertex()->position) / 2;
-      R += edgeMidpoint;
-      hChange = hChange->twin()->next();
-    } while (hChange != hStart);
-    R /= vertexDegree;
+      // R is the average of all edge midpoints for edges containing v
+      vector<Vector3D> edgeMidpointPositions;
+      hStart = v->halfedge();
+      hChange = hStart;
+      Vector3D R;
+      do
+      {
+        Vector3D edgeMidpoint = (v->position + hChange->next()->vertex()->position) / 2;
+        R += edgeMidpoint;
+        hChange = hChange->twin()->next();
+      } while (hChange != hStart);
+      R /= vertexDegree;
 
-    // S is the original vertex position for vertex v
-    Vector3D S = v->position;
+      // S is the original vertex position for vertex v
+      Vector3D S = v->position;
 
-    // weighted sum
-    v->newPosition = (Q + 2*R + (vertexDegree - 3) * S) / vertexDegree;
+      // weighted sum
+      v->newPosition = (Q + 2 * R + (vertexDegree - 3) * S) / vertexDegree;
+    }
+    else {
+      // boundary edge
+      HalfedgeIter hStart = v->halfedge();
+      HalfedgeIter hChange = hStart;
+      vector<Vector3D> boundaryEdgePositions;
+      do
+      {
+        if (hChange->edge()->isBoundary()) boundaryEdgePositions.push_back(hChange->next()->vertex()->position);
+        hChange = hChange->twin()->next();
+      } while (hChange != hStart);
+      if (boundaryEdgePositions.size() == 2) {
+        // crease
+        v->newPosition = (boundaryEdgePositions[0] + 6 * v->position + boundaryEdgePositions[1]) / 8;
+      }
+      if (boundaryEdgePositions.size() >= 3 || boundaryEdgePositions.size() == 1) {
+        // corner rule, vertex position stays the same
+        // or a "dart" (1 sharp edge), and I don't care
+        v->newPosition = v->position;
+      }
+    }
   }
 }
 
