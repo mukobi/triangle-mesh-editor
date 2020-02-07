@@ -1033,6 +1033,7 @@ class HalfedgeMesh {
 
   // TESTING
   void RunAllTestsForEntireMesh(HalfedgeMesh* mesh);
+  bool RUN_TESTS = true;
 
  protected:
   /*

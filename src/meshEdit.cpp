@@ -4,8 +4,6 @@
 #include "mutablePriorityQueue.h"
 #include "error_dialog.h"
 
-constexpr auto RUN_TESTS = true;
-
 namespace CS248 {
 
 VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
@@ -176,7 +174,7 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
     v1->halfedge() = h1;
     v2->halfedge() = h2;
     v3->halfedge() = h5;
-    v4->halfedge() = h3;
+    v4->halfedge() = h14;
 
     // position of new vertices
     v4->position = (v0->position + v1->position) / 2.0f;
@@ -990,13 +988,23 @@ void MeshResampler::upsample(HalfedgeMesh& mesh)
 // This routine should increase the number of triangles in the mesh using Loop
 // subdivision.
 {
+  // disable testing for intermediate operations
+  bool initial_run_tests = mesh.RUN_TESTS;
+  mesh.RUN_TESTS = false;
   // TODO: (meshEdit)
   // Compute new positions for all the vertices in the input mesh, using
   // the Loop subdivision rule, and store them in Vertex::newPosition.
-  // -> At this point, we also want to mark each vertex as being a vertex of the
-  //    original mesh.
+  for (VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+    // -> At this point, we also want to mark each vertex as being a vertex of the
+    //    original mesh.
+    v->isNew = false;
+  }
   // -> Next, compute the updated vertex positions associated with edges, and
   //    store it in Edge::newPosition.
+  for (EdgeIter e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++) {
+    e->isNew = false;
+    // compute stuff
+  }
   // -> Next, we're going to split every edge in the mesh, in any order.  For
   //    future reference, we're also going to store some information about which
   //    subdivided edges come from splitting an edge in the original mesh, and
@@ -1004,8 +1012,48 @@ void MeshResampler::upsample(HalfedgeMesh& mesh)
   //    loop, we only want to iterate over edges of the original mesh.
   //    Otherwise, we'll end up splitting edges that we just split (and the
   //    loop will never end!)
+  // iterate over all edges in the mesh
+  int n = mesh.nEdges();
+  EdgeIter e = mesh.edgesBegin();
+  for (int i = 0; i < n; i++) {
+
+    // get the next edge NOW!
+    EdgeIter nextEdge = e;
+    nextEdge++;
+
+    // now, even if splitting the edge deletes it...
+    if (!e->isNew) {
+      auto newVert = mesh.splitEdge(e);
+      newVert->isNew = true;
+      auto otherOldEdge = newVert->halfedge()->edge(); // splitEdge returns vert with h.e. on new edge along original split edge
+      // walk edges to mark the new ones
+      HalfedgeIter hStart = newVert->halfedge();
+      HalfedgeIter hChange = hStart;
+      do
+      {
+        if (hChange->edge() != e && hChange->edge() != otherOldEdge) {
+          // new edge
+          hChange->edge()->isNew = true;
+        }
+        hChange = hChange->twin()->next();
+      } while (hChange != hStart);
+    }
+
+    // ...we still have a valid reference to the next edge.
+    e = nextEdge;
+  }
   // -> Now flip any new edge that connects an old and new vertex.
+  for (e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++) {
+    VertexCIter v0 = e->halfedge()->vertex();
+    VertexCIter v1 = e->halfedge()->twin()->vertex();
+    if (e->isNew && (v0->isNew != v1->isNew)) {
+      mesh.flipEdge(e);
+    }
+  }
   // -> Finally, copy the new vertex positions into final Vertex::position.
+  for (VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+    // compute stuff
+  }
 
   // Each vertex and edge of the original surface can be associated with a
   // vertex in the new (subdivided) surface.
@@ -1036,7 +1084,11 @@ void MeshResampler::upsample(HalfedgeMesh& mesh)
   // Finally, flip any new edge that connects an old and new vertex.
 
   // Copy the updated vertex positions to the subdivided mesh.
-  showError("upsample() not implemented.");
+
+
+  // reset testing
+  mesh.RUN_TESTS = initial_run_tests;
+  mesh.RunAllTestsForEntireMesh(&mesh);
 }
 
 void MeshResampler::downsample(HalfedgeMesh& mesh) {
