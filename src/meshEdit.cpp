@@ -995,17 +995,38 @@ void MeshResampler::upsample(HalfedgeMesh& mesh)
   // Compute new positions for all the vertices in the input mesh, using
   // the Loop subdivision rule, and store them in Vertex::newPosition.
   for (VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
-    Size n = v->degree();
-    float u = n == 3 ? 3.0 / 16.0 : 3.0 / (8.0 * n);
-    v->newPosition = (1.0f - double(n) * u) * v->position;
-    auto hStart = v->halfedge();
-    auto hChange = hStart;
-    do
-    {
-      v->newPosition += u * hChange->next()->vertex()->position;
-      hChange = hChange->twin()->next();
-    } while (hChange != hStart);
-
+    if (!v->isBoundary()) {
+      Size n = v->degree();
+      float u = n == 3 ? 3.0 / 16.0 : 3.0 / (8.0 * n);
+      v->newPosition = (1.0f - double(n) * u) * v->position;
+      auto hStart = v->halfedge();
+      auto hChange = hStart;
+      do
+      {
+        v->newPosition += u * hChange->next()->vertex()->position;
+        hChange = hChange->twin()->next();
+      } while (hChange != hStart);
+    }
+    else {
+      // boundary vertex
+      HalfedgeIter hStart = v->halfedge();
+      HalfedgeIter hChange = hStart;
+      vector<Vector3D> boundaryEdgePositions;
+      do
+      {
+        if (hChange->edge()->isBoundary()) boundaryEdgePositions.push_back(hChange->next()->vertex()->position);
+        hChange = hChange->twin()->next();
+      } while (hChange != hStart);
+      if (boundaryEdgePositions.size() == 2) {
+        // crease
+        v->newPosition = (boundaryEdgePositions[0] + 6 * v->position + boundaryEdgePositions[1]) / 8;
+      }
+      if (boundaryEdgePositions.size() >= 3 || boundaryEdgePositions.size() == 1) {
+        // corner rule, vertex position stays the same
+        // or a "dart" (1 sharp edge), and I don't care
+        v->newPosition = v->position;
+      }
+    }
     // -> At this point, we also want to mark each vertex as being a vertex of the
     //    original mesh.
     v->isNew = false;
@@ -1015,20 +1036,31 @@ void MeshResampler::upsample(HalfedgeMesh& mesh)
   for (EdgeIter e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++) {
     e->isNew = false;
     // assert only triangles
-    if (e->halfedge()->next()->next()->next() != e->halfedge() ||
-      e->halfedge()->twin()->next()->next()->next() != e->halfedge()->twin()) {
+    if (e->halfedge()->next()->next()->next() != e->halfedge()
+      && !e->halfedge()->isBoundary()) {
+      // not a triangle
+      showError("Can only do loop subdivision on a mesh of all triangles; this ain't it, cheif.");
+      return;
+    }
+    if (e->halfedge()->twin()->next()->next()->next() != e->halfedge()->twin()
+      && !e->halfedge()->twin()->isBoundary()) {
       // not a triangle
       showError("Can only do loop subdivision on a mesh of all triangles; this ain't it, cheif.");
       return;
     }
 
-    // compute stuff
     auto A = e->halfedge()->vertex()->position;
     auto B = e->halfedge()->twin()->vertex()->position;
-    auto C = e->halfedge()->next()->next()->vertex()->position;
-    auto D = e->halfedge()->twin()->next()->next()->vertex()->position;
-    e->newPosition = 3.0 / 8.0 * (A + B) + 1.0 / 8.0 * (C + D);
-    //e->newPosition = 0.5 * (A + B);
+    if (!e->isBoundary()) {
+      // compute stuff
+      auto C = e->halfedge()->next()->next()->vertex()->position;
+      auto D = e->halfedge()->twin()->next()->next()->vertex()->position;
+      e->newPosition = 3.0 / 8.0 * (A + B) + 1.0 / 8.0 * (C + D);
+    }
+    else {
+      // boundary edge
+      e->newPosition = 0.5 * (A + B);
+    }
   }
   // -> Next, we're going to split every edge in the mesh, in any order.  For
   //    future reference, we're also going to store some information about which
