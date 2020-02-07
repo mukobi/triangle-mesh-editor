@@ -4,6 +4,8 @@
 #include "mutablePriorityQueue.h"
 #include "error_dialog.h"
 
+constexpr auto RUN_TESTS = true;
+
 namespace CS248 {
 
 VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
@@ -79,6 +81,8 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
     // PHASE III: Reassign Elements
 
     // HALFEDGES
+    #pragma region halfedge assign
+
     h0->next() = h10;
     h0->twin() = h3;
     h0->vertex() = v0;
@@ -164,6 +168,8 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
     h15->edge() = e5;
     h15->face() = f3;
 
+    #pragma endregion
+
 
     // VERTICES
     v0->halfedge() = h0;
@@ -194,6 +200,7 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
     // PHASE IV: Delete unused elements
 
     // nothing to delete!
+    RunAllTestsForEntireMesh(this);
 
     return v4;
   }
@@ -201,12 +208,12 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
     // e0 is a boundary edge, need to only split one triangle
 
     // PHASE I: Collect relevant elements
-    cout << "boundary split" << endl;
+    //cout << "boundary split" << endl;
     // HALFEDGES
     HalfedgeIter h0 = e0->halfedge();
     if (h0->isBoundary()) {
-      cout << "halfedge is boundary, flipping" << endl;
       // wrong triangle, twin h0 to get the inside triangle
+      //cout << "halfedge is boundary, flipping" << endl;
       h0 = h0->twin();
     }
     HalfedgeIter h1 = h0->next();
@@ -258,7 +265,7 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 
     // HALFEDGES
     h0->next() =   h6;
-    h0->twin() =   h3;
+    h0->twin() =   h9;
     h0->vertex() = v0;
     h0->edge() =   e0;
     h0->face() =   f0;
@@ -273,10 +280,16 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
     h2->edge() =   e2;
     h2->face() =   f0;
     // outside
-    h3->next() =   h3->next();
-    h3->twin() =   h0;
-    h3->vertex() = v3;
-    h3->edge() =   e0;
+    h9->next() = h3->next();
+    h9->twin() = h0;
+    h9->vertex() = v3;
+    h9->edge() = e0;
+    h9->face() = h3->face();
+    // do h9 before h3 to h3 sees old h3->next()
+    h3->next() =   h9;
+    h3->twin() =   h8;
+    h3->vertex() = v1;
+    h3->edge() =   e3;
     h3->face() =   h3->face();
     h4->next() =   h4->next();
     h4->twin() =   h1;
@@ -300,22 +313,17 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
     h7->edge() =   e4;
     h7->face() =   f1;
     h8->next() =   h1;
-    h8->twin() =   h9;
+    h8->twin() =   h3;
     h8->vertex() = v3;
     h8->edge() =   e3;
     h8->face() =   f1;
-    h9->next() =   h3;
-    h9->twin() =   h8;
-    h9->vertex() = v1;
-    h9->edge() =   e3;
-    h9->face() =   h3->face();
 
 
     // VERTICES
     v0->halfedge() = h0;
     v1->halfedge() = h1;
     v2->halfedge() = h2;
-    v3->halfedge() = h3;
+    v3->halfedge() = h8;
 
     // position of new vertices
     v3->position = (v0->position + v1->position) / 2.0f;
@@ -334,6 +342,8 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
     // PHASE IV: Delete unused elements
 
     // nothing to delete!
+
+    RunAllTestsForEntireMesh(this);
 
     return v3;
   }
@@ -512,6 +522,8 @@ EdgeIter HalfedgeMesh::flipEdge(EdgeIter e0) {
   // PHASE IV: Delete unused elements
 
   // nothing to delete!
+
+  RunAllTestsForEntireMesh(this);
 
   return e0;
 }
@@ -925,6 +937,71 @@ void MeshResampler::resample(HalfedgeMesh& mesh) {
   // -> Now flip each edge if it improves vertex degree
   // -> Finally, apply some tangential smoothing to the vertex positions
   showError("resample() not implemented.");
+}
+
+// Local operation tests
+
+bool VertexTest(VertexCIter v) {
+  // a vertex test that goes through the ring of halfedges around it to check that all the halfedges point to that vertex
+  HalfedgeCIter h0 = v->halfedge();
+  HalfedgeCIter hChange = h0;
+  do
+  {
+    if (hChange->vertex() != v) {
+      cout << "Halfedge " << &hChange << " should point to vertex " << &v << " but points to " << &hChange->vertex() << endl;
+      return false;
+    }
+    hChange = hChange->twin()->next(); // cycle around
+  } while (hChange != h0);
+  return true;
+}
+bool EdgeTest(EdgeCIter e) {
+  // an edge test to checks that the pair of halfedges point to that edge
+  HalfedgeCIter h0 = e->halfedge();
+  if (h0->edge() != e) {
+    cout << "Halfedge " << &h0 << " should point to edge " << &e << " but points to " << &h0->edge() << endl;
+    return false;
+  }
+  if (h0->twin()->edge() != e) {
+    cout << "Halfedge " << &h0->twin() << " should point to edge " << &e << " but points to " << &h0->twin()->edge() << endl;
+    return false;
+  }
+  return true;
+}
+bool FaceTest(FaceCIter f) {
+  // a face test that goes around the face to check that all the halfedges point to that face
+  HalfedgeCIter h0 = f->halfedge();
+  HalfedgeCIter hChange = h0;
+  do
+  {
+    if (hChange->face() != f) {
+      cout << "Halfedge " << &hChange << " should point to face " << &f << " but points to " << &hChange->face() << endl;
+      return false;
+    }
+    hChange = hChange->next(); // cycle around
+  } while (hChange != h0);
+  return true;
+}
+
+void HalfedgeMesh::RunAllTestsForEntireMesh(HalfedgeMesh* mesh) {
+  // a test that runs all previous 3 tests for every vertex, edge and face in the mesh
+  if (RUN_TESTS) {
+    bool vertPass = true, edgePass = true, facePass = true;
+    // vertices
+    for (VertexCIter v = mesh->verticesBegin(); v != mesh->verticesEnd(); v++) {
+      if (!VertexTest(v)) vertPass = false;
+    }
+    // edges
+    for (EdgeCIter e = mesh->edgesBegin(); e != mesh->edgesEnd(); e++) {
+      if (!EdgeTest(e)) edgePass = false;
+    }
+    // faces
+    for (FaceCIter f = mesh->facesBegin(); f != mesh->facesEnd(); f++) {
+      if (!FaceTest(f)) facePass = false;
+    }
+
+    cout << "vert pass: " << vertPass << " edge pass: " << edgePass << " face pass: " << facePass << endl;
+  }
 }
 
 }  // namespace CS248

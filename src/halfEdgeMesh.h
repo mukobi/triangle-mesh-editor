@@ -1031,6 +1031,9 @@ class HalfedgeMesh {
   void splitPolygon(FaceIter f);
   void splitPolygons(vector<FaceIter>& fcs);
 
+  // TESTING
+  void RunAllTestsForEntireMesh(HalfedgeMesh* mesh);
+
  protected:
   /*
    * Here's where the mesh elements are actually stored---this is the one
