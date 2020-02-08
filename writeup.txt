@@ -19,7 +19,7 @@ buildSubdivisionFaceList()
 upsample()
 
 5. Create one beautiful 3D model using Cardinal3D
-# TODO: make low-poly baby Yoda
+I tried to model Baby Yoda from "The Mandalorian"
 
 Extra credits:
 nah
