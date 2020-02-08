@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+<asset>
+   <contributor>
+      <author>Cardinal</author>
+      <authoring_tool>Stanford Cardinal3D (version CS248)</authoring_tool>
+   </contributor>
+   <created>2020-02-07T20:56:26</created>
+   <modified>2020-02-07T20:56:26</modified>
+   <unit name="meter" meter="1"/>
+   <up_axis>Y_UP</up_axis>
+</asset>
+   <library_geometries>
+      <geometry id="M1" name="Mesh1">
+         <mesh>
+            <source id="M1-positions">
+               <float_array id="M1-positions-array" count="78">
+                  -0.0330668 -1.80282 -2.02038
+                  1.51682 -1.29963 -1.98968
+                  2.43756 -1.08619 0.26297
+                  0 -2 0
+                  1.3515 -0.873216 2.04837
+                  0.0109327 -1.28661 2.14161
+                  -1.07425 -1.04902 2.06364
+                  -2.04815 -1.15028 -0.154413
+                  -1.75885 -1.09086 -2.03228
+                  -0.00131309 2.01043 -1.87015
+                  -1.40919 1.73805 -1.50344
+                  -2 2 0
+                  0 2 0
+                  -1.31332 1.79315 1.52996
+                  0.00539291 2.05451 1.76478
+                  1.29438 1.82578 1.58381
+                  2 2 0
+                  1.35716 1.75479 -1.48581
+                  -2 0 -2
+                  -7.0458 0.480007 -0.530695
+                  -1.88567 0.191048 1.78733
+                  2 0 -2
+                  0 0 -2
+                  1.99265 0.168142 1.8986
+                  6.98497 0.521364 0.138501
+                  -0.00106226 0.102975 2.93084
+               </float_array>
+               <technique_common>
+                  <accessor source="#M1-positions-array" count="26" stride="3">
+                     <param name="X" type="float"/>
+                     <param name="Y" type="float"/>
+                     <param name="Z" type="float"/>
+                  </accessor>
+               </technique_common>
+            </source>
+            <vertices id="M1-vertices">
+               <input semantic="POSITION" source="#M1-positions"/>
+            </vertices>
+         <polylist count="24">
+            <input semantic="VERTEX" source="#M1-vertices" offset="0"/>
+            <vcount>4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4             </vcount>
+            <p>
+               3 0 1 2 
+               3 2 4 5 
+               3 5 6 7 
+               3 7 8 0 
+               12 9 10 11 
+               12 11 13 14 
+               12 14 15 16 
+               12 16 17 9 
+               19 18 8 7 
+               19 7 6 20 
+               19 20 13 11 
+               19 11 10 18 
+               22 21 1 0 
+               22 0 8 18 
+               22 18 10 9 
+               22 9 17 21 
+               24 16 15 23 
+               24 23 4 2 
+               24 2 1 21 
+               24 21 17 16 
+               25 5 4 23 
+               25 23 15 14 
+               25 14 13 20 
+               25 20 6 5 
+            </p>
+         </polylist>
+         </mesh>
+      </geometry>
+   </library_geometries>
+   <library_visual_scenes>
+      <visual_scene id="CardinalScene">
+         <node id="N1" name="Node1">
+            <instance_geometry url="#M1">
+            </instance_geometry>
+         </node>
+      </visual_scene>
+   </library_visual_scenes>
+   <scene>
+      <instance_visual_scene url="#CardinalScene"/>
+   </scene>
+</COLLADA>
